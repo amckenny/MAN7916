@@ -18,7 +18,7 @@ Our dictionary is going to be of 'entrepreneurial' words. Your four root words a
 
 1. Loads the GloVe word embedding (100d) model from the `local_data` directory
 2. Identifies the word vectors for the four root words calculates the cosine similarity between each pair of root words and saves this in the `word_embedding_results.docx` file
-3. One of the words should seem suspiciously low in similarity to the other three. Let's drop that word, maybe that wasn't a very good root word. Save the three remaining root words in a list.
+3. One of the words should seem suspiciously low in similarity relative to the other three. Let's drop that word, maybe that wasn't a very good root word. Save the three remaining root words in a list.
 4. Calculate the average vector of the three remaining root words and save the first five dimensions of this vector in the `word_embedding_results.docx` file
 5. Calculate the cosine similarity between the average vector and each root word. Save this in the `word_embedding_results.docx` file.
 6. Find the 50 words that are closest to the average vector in the GloVe model and save them in a list from most similar to least - you may want to explore the 'similar_by_vector' method in the gensim model. This will be our 'deductive' word list.
