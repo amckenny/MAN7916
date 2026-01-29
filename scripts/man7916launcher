@@ -32,6 +32,7 @@ prompt_user() {
       mkdir -p ~/MAN7916
       cp ./venv_and_directory_setup.slurm ~/MAN7916/venv_and_directory_setup.slurm
       cp ./man7916launcher ~/MAN7916/man7916launcher
+      cp ./nltk_environ_setup.py ~/MAN7916/nltk_environ_setup.py
       cd ~/MAN7916
       touch __init__.py
       mkdir -p ./models
@@ -44,9 +45,7 @@ prompt_user() {
       else
         echo "Virtual environment .venv already exists..."
       fi
-      source ~/MAN7916/.venv/bin/activate
-      pip3 install --upgrade pip wheel setuptools
-      echo "Virtual environment activated and pip upgraded..."
+      echo "Virtual environment activated..."
       echo ""
       echo "=================================================="
       echo "======= Downloading Text and Model Corpora ======="

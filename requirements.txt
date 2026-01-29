@@ -9,9 +9,11 @@ ipykernel
 matplotlib
 nltk
 nodriver
+numpy
 openai
 pandas
 pingouin
+pprint
 pyLDAvis
 python-dotenv
 requests
@@ -19,10 +21,8 @@ scattertext
 scikit-learn
 seaborn
 shap
-spacy
+spacy[cuda-autodetect]
 stanza
-tensorflow
-tf-keras
 tomotopy
 torch
 torchvision

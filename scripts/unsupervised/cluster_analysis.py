@@ -203,7 +203,7 @@ def plot_top_terms_per_cluster(vectorizer, kmeans, n_top_terms=10, output_prefix
 
 def main():
     # Define input/output directories (adjust if needed)
-    input_directory = '/groups/course.man7916/corpora/aussie/About'
+    input_directory = Path.home() / 'MAN7916' / 'corpora' / 'aussie' / 'About'
     output_directory = Path.home() / 'MAN7916' / 'output' / 'cluster_analysis'
     os.makedirs(output_directory, exist_ok=True)
 

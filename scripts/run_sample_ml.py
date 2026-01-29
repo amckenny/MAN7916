@@ -1,10 +1,13 @@
 import warnings
 
-import os, sys
+import os
+import sys
 from datetime import datetime
 from pathlib import Path
 
-import nltk, pyLDAvis, spacy
+import nltk
+import pyLDAvis
+import spacy
 import numpy as np
 import pandas as pd
 import scattertext as st
@@ -17,27 +20,32 @@ from sklearn import linear_model, naive_bayes, svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score, matthews_corrcoef
-from sklearn.model_selection import GridSearchCV
 from torch.utils.data import DataLoader, Dataset, random_split
 
-from dict_analysis import read_dictionary, get_count
+from scripts.dictionary.dict_analysis import read_dictionary, get_count
 
 warnings.simplefilter("ignore", category=DeprecationWarning)
 
-nltk_dir = Path.cwd() / "models"
+nltk_dir = Path.home() / "MAN7916" / "models"
 assert nltk_dir.exists()
 os.environ["NLTK_DATA"] = str(nltk_dir)
 os.environ["OMP_NUM_THREADS"] = "16"
 
 if not torch.cuda.is_available():
-    print("No GPU detected... You probably want to restart with a GPU-enabled runtime")
+    print(
+        "No GPU detected... You probably want to restart with a GPU-enabled runtime",
+        flush=True,
+    )
 else:
-    print(f"Found a GPU! Ready for the next step... ({torch.cuda.get_device_name(0)})")
+    print(
+        f"Found a GPU! Ready for the next step... ({torch.cuda.get_device_name(0)})",
+        flush=True,
+    )
 
 
-texts_path = Path.cwd() / "texts"
-dicts_path = Path.cwd() / "dictionaries"
-dataset_dir = texts_path / "aclImdb"
+corpora_path = Path.home() / "MAN7916" / "corpora"
+dicts_path = Path.home() / "MAN7916" / "dictionaries"
+dataset_dir = corpora_path / "aclImdb"
 train_dir = dataset_dir / "train"
 test_dir = dataset_dir / "test"
 batch_size = 32
@@ -281,7 +289,7 @@ st_html = st.produce_scattertext_explorer(
     term_scorer=st.CredTFIDF(st_corpus),
     background_color="#e5e5e3",
 )
-filepath = str(Path.cwd() / "output" / "scattertext.html")
+filepath = str(Path.home() / "MAN7916" / "output" / "scattertext.html")
 with open(filepath, "w", encoding="utf-8") as outfile:
     outfile.write(st_html)
 print(f"Scattertext plot saved to {filepath} - download it to your computer to view.")
@@ -701,23 +709,26 @@ print(
     "slow... be prepared to wait on this one for a while..."
 )
 hyperparameters = {
-    'C': 1.0,
-    'kernel': "linear",
-    'degree': 3,
-    'gamma': "auto",
+    "C": 1.0,
+    "kernel": "linear",
+    "degree": 3,
+    "gamma": "auto",
 }
 while True:
     print(f"\n====~~~~~HYPERPARAMETERS~~~~~==== - {datetime.now()}", flush=True)
-
 
     print(
         f"\n====Train the support vector machine classifier==== - {datetime.now()}",
         flush=True,
     )
-    svm_classifier = svm.SVC(C=hyperparameters['C'], kernel=hyperparameters['kernel'], degree=hyperparameters['degree'], gamma=hyperparameters['gamma'])
+    svm_classifier = svm.SVC(
+        C=hyperparameters["C"],
+        kernel=hyperparameters["kernel"],
+        degree=hyperparameters["degree"],
+        gamma=hyperparameters["gamma"],
+    )
     svm_classifier.fit(x_train_tfidf, full_train_data["sentiment"])
     svm_predictions = svm_classifier.predict(x_test_tfidf)
-
 
     print(
         f"\n====Estimate and print the accuracy and phi coefficient for the random forest classifier==== - {datetime.now()}",
@@ -741,16 +752,24 @@ while True:
             continue
         new_value = input(f"Enter the new value for {hyperparameter}: ")
         try:
-            if hyperparameter == "kernel" and new_value not in ["linear", "poly", "rbf", "sigmoid"]:
+            if hyperparameter == "kernel" and new_value not in [
+                "linear",
+                "poly",
+                "rbf",
+                "sigmoid",
+            ]:
+                print("Invalid value. Please try again.")
+                continue
+            if (hyperparameter == "C" or hyperparameter == "degree") and (
+                not new_value.isdigit() or int(new_value) < 1
+            ):
                 print("Invalid value. Please try again.")
                 continue
             if (
-                hyperparameter == "C"
-                or hyperparameter == "degree"
-            ) and (not new_value.isdigit() or int(new_value) < 1):
-                print("Invalid value. Please try again.")
-                continue
-            if hyperparameter == "gamma" and new_value not in ["auto", "scale"] and not isinstance(new_value, float):
+                hyperparameter == "gamma"
+                and new_value not in ["auto", "scale"]
+                and not isinstance(new_value, float)
+            ):
                 print("Invalid value. Please try again.")
                 continue
             if hyperparameter != "gamma":
@@ -778,7 +797,9 @@ print(
     "consolidate all of the statistics for the models we ran (net of any "
     "tinkering you may have done as part of the activities, of course)."
 )
-print(f"\n\n====Comparison of each sentiment approach==== - {datetime.now()}", flush=True)
+print(
+    f"\n\n====Comparison of each sentiment approach==== - {datetime.now()}", flush=True
+)
 print("CORRELATIONS:")
 print(
     f"The correlation between sentiment and the positivity dictionary is......... ORIGINAL: {pos_pbsr[0]:.02}; p = {pos_pbsr[1]:.02e} --- CUSTOM: {cus_pos_pbsr[0]:.02}; p = {cus_pos_pbsr[1]:.02e}"
@@ -855,13 +876,13 @@ print(
     "with the IMDB dataset we have been working with.\n"
 )
 hyperparameters = {
-    'k': 10,
-    'term_weight': tp.TermWeight.ONE,
-    'min_cf': 3,
-    'min_df': 1,
-    'rm_top': 5,
-    'alpha': 0.1,
-    'eta': 0.01,
+    "k": 10,
+    "term_weight": tp.TermWeight.ONE,
+    "min_cf": 3,
+    "min_df": 1,
+    "rm_top": 5,
+    "alpha": 0.1,
+    "eta": 0.01,
 }
 while True:
     print(f"\n====~~~~~HYPERPARAMETERS~~~~~==== - {datetime.now()}", flush=True)
@@ -869,13 +890,13 @@ while True:
 
     print(f"\n====Train Latent Dirichlet Allocation==== - {datetime.now()}", flush=True)
     model = tp.LDAModel(
-        tw=hyperparameters['term_weight'],
-        min_cf=hyperparameters['min_cf'],
-        min_df=hyperparameters['min_df'],
-        rm_top=hyperparameters['rm_top'],
-        alpha=hyperparameters['alpha'],
-        eta=hyperparameters['eta'],
-        k=hyperparameters['k'],
+        tw=hyperparameters["term_weight"],
+        min_cf=hyperparameters["min_cf"],
+        min_df=hyperparameters["min_df"],
+        rm_top=hyperparameters["rm_top"],
+        alpha=hyperparameters["alpha"],
+        eta=hyperparameters["eta"],
+        k=hyperparameters["k"],
     )
     for review_text in test_data["review_tokens"]:
         model.add_doc(review_text)
@@ -917,16 +938,27 @@ while True:
             continue
         new_value = input(f"Enter the new value for {hyperparameter}: ")
         try:
-            if hyperparameter == "kernel" and new_value not in ["linear", "poly", "rbf", "sigmoid"]:
+            if hyperparameter == "kernel" and new_value not in [
+                "linear",
+                "poly",
+                "rbf",
+                "sigmoid",
+            ]:
                 print("Invalid value. Please try again.")
                 continue
             if (
                 hyperparameter == "k"
-                or hyperparameter == "min_cf" or hyperparameter == "min_df" or hyperparameter == "rm_top"
+                or hyperparameter == "min_cf"
+                or hyperparameter == "min_df"
+                or hyperparameter == "rm_top"
             ) and (not new_value.isdigit() or int(new_value) < 1):
                 print("Invalid value. Please try again.")
                 continue
-            if hyperparameter == "term_weight" and new_value.lower() not in ["one", "pmi", "idf"]:
+            if hyperparameter == "term_weight" and new_value.lower() not in [
+                "one",
+                "pmi",
+                "idf",
+            ]:
                 print("Invalid value. Please try again.")
                 continue
             if hyperparameter != "gamma":
@@ -959,7 +991,7 @@ prepared_data = pyLDAvis.prepare(
     start_index=1,
     sort_topics=False,
 )
-filename = str(Path.cwd() / "output" / "pyLDAvis_LDA.html")
+filename = str(Path.home() / "MAN7916" / "output" / "pyLDAvis_LDA.html")
 pyLDAvis.save_html(prepared_data, filename)
 print(f"pyLDAvis plot saved to {filename} - download it to your computer to view.")
 

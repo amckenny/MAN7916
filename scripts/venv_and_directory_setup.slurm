@@ -22,8 +22,15 @@ git sparse-checkout init --cone
 git sparse-checkout set scripts corpora dictionaries
 git pull origin main
 
+# Unzip the Aussie corpus
+cd corpora
+mkdir -p aussie
+unzip AussieTop100private.zip -d aussie
+cd ..
+
 # Set up virtual environment and install packages
 source ~/MAN7916/.venv/bin/activate
+python3 -m pip install --upgrade pip wheel setuptools
 python3 -m pip install --upgrade -r requirements_newton.txt
 python3 -m spacy download en_core_web_sm
 python3 ./nltk_environ_setup.py
