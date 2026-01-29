@@ -19,9 +19,9 @@ scattertext
 scikit-learn
 seaborn
 shap
-spacy
+spacy[cuda12x]
 stanza
-tensorflow
+tensorflow[and-cuda]
 tf-keras
 tomotopy
 torch

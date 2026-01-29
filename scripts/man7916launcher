@@ -24,50 +24,37 @@ prompt_user() {
     [Yy]* )
       echo "Beginning installation. This may take a bit..."
       echo "=================================================="
-      echo "========= Setting up directory structure ========="
-      echo "=================================================="
-      mkdir -p ~/MAN7916
-      cd ~/MAN7916
-      touch __init__.py
-      mkdir -p ./dictionaries
-      mkdir -p ./models
-      mkdir -p ./output
-      echo "Done..."
-      echo ""
-      echo "=================================================="
-      echo "========= Loading CUDA and Python Modules ========"
+      echo "========= Setting up directory and Python ========"
       echo "=================================================="
       module load cuda/cuda-12.6.0
       module load python/python-3.11.4-oneapi-2023.1.0
-      echo "Done..."
-      echo ""
+      echo "CUDA and Python modules loaded..."
+      mkdir -p ~/MAN7916
+      cp ./venv_and_directory_setup.slurm ~/MAN7916/venv_and_directory_setup.slurm
+      cp ./man7916launcher ~/MAN7916/man7916launcher
+      cd ~/MAN7916
+      touch __init__.py
+      mkdir -p ./models
+      mkdir -p ./output
+      mkdir -p ./corpora
+      echo "Directory structure created..."
       if [ ! -d ".venv" ]; then
-        echo "=================================================="
-        echo "======= Creating virtual environment .venv ======="
-        echo "=================================================="
 	      python3 -m venv .venv
-        echo "Done..."
-        echo ""
+        echo "Virtual environment .venv created..."
       else
-        echo "Virtual environment .venv already exists... skipping creation"
+        echo "Virtual environment .venv already exists..."
       fi
-      echo "=================================================="
-      echo "========= Setting up Python Environment =========="
-      echo "=================================================="
       source ~/MAN7916/.venv/bin/activate
       pip3 install --upgrade pip wheel setuptools
-      #pip3 install --upgrade nltk spacy[cuda12x] scattertext pyldavis matplotlib tomotopy xgboost scikit-learn tensorflow torch torchvision torchaudio transformers[torch] datasets evaluate tf-keras --timeout 120
-      echo "Done..."
+      echo "Virtual environment activated and pip upgraded..."
       echo ""
       echo "=================================================="
       echo "======= Downloading Text and Model Corpora ======="
       echo "============= This may take a while =============="
       echo "=================================================="
-      wget -q http://www.catscanner.net/dictuploads/Tone_H08_Negativity.dict -O ./dictionaries/Tone_H08_Negativity.dict
-      wget -q http://www.catscanner.net/dictuploads/Tone_H08_Positivity.dict -O ./dictionaries/Tone_H08_Positivity.dict
 
-      TAR_FILE="./texts/aclImdb_v1.tar.gz"
-      EXTRACT_DIR="./texts/aclImdb/"
+      TAR_FILE="./corpora/aclImdb_v1.tar.gz"
+      EXTRACT_DIR="./corpora/aclImdb/"
       if [ ! -f "$TAR_FILE" ]; then
         echo "Downloading aclImdb_v1.tar.gz..."
         wget -q https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz -O "$TAR_FILE"
@@ -83,7 +70,7 @@ prompt_user() {
         echo "Data already extracted in: $EXTRACT_DIR"
       fi
 
-      UNSUP_DIR="./texts/aclImdb/train/unsup/"
+      UNSUP_DIR="./corpora/aclImdb/train/unsup/"
 
       if [ ! -d "$UNSUP_DIR" ]; then
         echo "unsup directory already removed... skipping..."
@@ -92,7 +79,7 @@ prompt_user() {
         rm -r "$UNSUP_DIR"
       fi
 
-      sbatch ./man7916launcher.slurm
+      sbatch ./venv_and_directory_setup.slurm
       echo "Done..."
       echo ""
 

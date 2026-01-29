@@ -1,4 +1,5 @@
 """ Script to set up NLTK environment by downloading necessary models """
+# This script is intended to be run by man7916launcher, not directly.
 
 import os
 from pathlib import Path
