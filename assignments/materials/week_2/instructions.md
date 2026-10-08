@@ -2,9 +2,9 @@
 
 ## Prerequisites:
  - Basic understanding of scraping in Python
-   - If you don't have this after completing the tutorial, I recommend completing the "Intermediate Importing Data in Python: Importing data from the Internet chapter" assignment in the [DataCamp course](https://app.datacamp.com/groups/man-7916-text-analysis-methods/dashboard) before proceeding.
+   - If you don't have this after completing the tutorial, I recommend completing the "Intermediate Importing Data in Python: Importing data from the Internet chapter" assignment in the [DataCamp course](https://app.datacamp.com/groups/man-7916-text-analysis-methods-9a2c4a02-a646-4664-b12f-83ae3ca6b350/dashboard) before proceeding.
  - Basic understanding of API access with Python
-   - If you don't have this after completing the tutorial, I recommend completing the "Intermediate Importing Data in Python: Interacting with APIs to Import data from the web chapter" assignment in the [DataCamp course](https://app.datacamp.com/groups/man-7916-text-analysis-methods/dashboard) before proceeding.
+   - If you don't have this after completing the tutorial, I recommend completing the "Intermediate Importing Data in Python: Interacting with APIs to Import data from the web chapter" assignment in the [DataCamp course](https://app.datacamp.com/groups/man-7916-text-analysis-methods-9a2c4a02-a646-4664-b12f-83ae3ca6b350/dashboard) before proceeding.
 
 ## Part 1 - Set up your Assignment 2 environment
 

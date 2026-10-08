@@ -2,9 +2,9 @@
 
 ## Prerequisites:
  - Basic understanding of plotting with mathplotlib in Python
-   - If you don't have this after completing the tutorial, I recommend completing the "Intermediate Python: Matplotlib chapter" assignment in the [DataCamp course](https://app.datacamp.com/groups/man-7916-text-analysis-methods/dashboard) before proceeding.
+   - If you don't have this after completing the tutorial, I recommend completing the "Intermediate Python: Matplotlib chapter" assignment in the [DataCamp course](https://app.datacamp.com/groups/man-7916-text-analysis-methods-9a2c4a02-a646-4664-b12f-83ae3ca6b350/dashboard) before proceeding.
  - Basic understanding of regular expressions in Python
-   - If you don't have this after completing the tutorial, I recommend completing the following assignments in the [DataCamp course](https://app.datacamp.com/groups/man-7916-text-analysis-methods/dashboard) before proceeding.
+   - If you don't have this after completing the tutorial, I recommend completing the following assignments in the [DataCamp course](https://app.datacamp.com/groups/man-7916-text-analysis-methods-9a2c4a02-a646-4664-b12f-83ae3ca6b350/dashboard) before proceeding.
      - "Regular Expressions in Python: Regular Expressions for Pattern Matching chapter"
      - "Regular Expressions in Python: Advanced Regular Expression Concepts chapter"
 

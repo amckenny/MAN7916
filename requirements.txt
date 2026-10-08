@@ -13,7 +13,6 @@ numpy
 openai
 pandas
 pingouin
-pprint
 pyLDAvis
 python-dotenv
 requests
@@ -21,7 +20,7 @@ scattertext
 scikit-learn
 seaborn
 shap
-spacy[cuda-autodetect]
+spacy
 stanza
 tomotopy
 torch

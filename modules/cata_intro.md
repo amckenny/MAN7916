@@ -2,7 +2,7 @@
 
 ## Topic: Introduction to Computer-Aided Text Analysis
 
-## Discussion Leader: Carys
+## Discussion Leader: TBD
 
 ### Readings - Required
 

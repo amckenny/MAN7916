@@ -2,7 +2,7 @@
 
 ## Topic: Manual Content Analysis
 
-## Discussion Leader: Mahsa
+## Discussion Leader: TBD
 
 ### Readings
 

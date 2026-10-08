@@ -4,7 +4,6 @@ matplotlib
 nltk
 numpy
 pandas
-pprint
 pyLDAvis
 scattertext
 scikit-learn

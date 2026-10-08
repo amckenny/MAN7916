@@ -493,7 +493,6 @@ print(
     "a tf-idf vector)."
 )
 hyperparameters = {
-    "penalty": "l2",
     "C": 1,
     "solver": "lbfgs",
     "max_iter": 100,
@@ -716,6 +715,7 @@ hyperparameters = {
 }
 while True:
     print(f"\n====~~~~~HYPERPARAMETERS~~~~~==== - {datetime.now()}", flush=True)
+    print(hyperparameters)
 
     print(
         f"\n====Train the support vector machine classifier==== - {datetime.now()}",

@@ -2,7 +2,7 @@
 
 ## Topic: Unsupervised Machine Learning Approaches in Text Analysis
 
-## Discussion Leader: Mahsa
+## Discussion Leader: TBD
 
 ### Readings - Required
 

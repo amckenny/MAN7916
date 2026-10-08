@@ -2,7 +2,7 @@
 
 ## Topic: (Large) Language Models
 
-## Discussion Leader: Xin
+## Discussion Leader: TBD
 
 ### Readings - Required
 
