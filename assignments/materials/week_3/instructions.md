@@ -41,17 +41,17 @@ In developing the codebook, you may be one of the coders, but you need to also i
 
 <br>
 
-## Step 3 - Upload the assignment materials to the github server
+## Step 3 - Upload the assignment materials to the GitHub server
 
 1. Verify that the assignment_3 folder has been created and contains the two Word files, and one Excel file.
 2. Commit the new folder and files to your local repository
-3. Push the new folder and files to the github server
-4. Check that the file is now on the github server by visiting your repository on the github website
+3. Push the new folder and files to the GitHub server
+4. Check that the file is now on the GitHub server by visiting your repository on the GitHub website
 
 ## Step 4 - Create an 'Issue' with a 'submitted' label
 
 1. In the Issues tab create the ***submitted*** label
-2. Create a new issue called ***Assignment 2 Submission***
+2. Create a new issue called ***Assignment 3 Submission***
     * with the submitted label
     * with the commit containing your assignment linked in the body
     * assigned to me (***amckenny***)

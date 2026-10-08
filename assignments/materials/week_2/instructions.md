@@ -75,12 +75,12 @@ The CSV file should have the following columns and look something like:
 
 <br>
 
-## Step 4 - Upload the assignment materials to the github server
+## Step 4 - Upload the assignment materials to the GitGub server
 
 1. Verify that the assignment_2 folder has been created and contains the two python files, two CSV files, and one text file.
 2. Commit the new folder and files to your local repository
-3. Push the new folder and files to the github server
-4. Check that the file is now on the github server by visiting your repository on the github website
+3. Push the new folder and files to the GitHub server
+4. Check that the file is now on the GitHub server by visiting your repository on the GitHub website
 
 ## Step 5 - Create an 'Issue' with a 'submitted' label
 

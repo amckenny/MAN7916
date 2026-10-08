@@ -1,4 +1,3 @@
-import functools
 from collections import Counter
 from typing import Any
 
@@ -69,7 +68,7 @@ def read_dictionary(filename: str) -> dict[str, list[Any]]:
         False not in segments_processed.values()
         and title is not None
         and var_name is not None
-        and len(word_list) > 0
+        and len(word_list["words"]) > 0
     ):
         word_list.update(
             {
@@ -86,7 +85,7 @@ def read_dictionary(filename: str) -> dict[str, list[Any]]:
             error_msgs += "\nTitle metadata could not be processed."
         if var_name is None:
             error_msgs += "\nVariable Name metadata could not be processed."
-        if len(word_list) == 0:
+        if len(word_list["words"]) == 0:
             error_msgs += "\nWordlist segment was empty."
 
         raise ValueError(
@@ -99,6 +98,4 @@ def read_dictionary(filename: str) -> dict[str, list[Any]]:
 # Counts the number of instances of 'wordlist' words in 'tokens'
 def get_count(tokens, wordlist):
     text_counter = Counter(tokens)
-    return functools.reduce(
-        lambda a, b: a + b, [text_counter[word] for word in wordlist]
-    )
+    return sum(text_counter[word] for word in wordlist)

@@ -7,9 +7,9 @@
 ### Readings - Required
 
 - Jiang, T., Gradus, J. L., & Rosellini, A. J. (2020). Supervised machine learning: A brief primer. *Behavior Therapy, 51*(5), 675-687.
-- Jurafsky, D., & Martin, J. H. (2024). Speech and language processing (3rd Edition). Pearson.
-  - Read: [Chapter 4: Naive Bayes, Text Classification, and Sentiment](https://web.stanford.edu/~jurafsky/slp3/4.pdf) - Don't worry about the math, focus on the concepts.
-  - Read: [Chapter 5: Logistic Regression](https://web.stanford.edu/~jurafsky/slp3/5.pdf) - Don't worry about the math, focus on the concepts.
+- Jurafsky, D., & Martin, J. H. (2026). Speech and language processing (3rd Edition). Pearson.
+  - Read: [Chapter 4: on Logistic Regression and Text Classification](https://web.stanford.edu/~jurafsky/slp3/4.pdf) - Don't worry about the math, focus on the concepts.
+  - Read: [Chapter 23: on Sentiment Analysis](https://web.stanford.edu/~jurafsky/slp3/23.pdf) - Skim this and again, don't worry about the math, focus on the concepts.
 - Kobayashi, V. B., Mol, S. T., Berkers, H. A., Kismihok, G., & Den Hartog, D. N. (2018). Text classification for organizational researchers: A tutorial. *Organizational Research Methods, 21*(3), 766-799.
 
 ### Tutorials

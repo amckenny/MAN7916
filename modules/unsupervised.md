@@ -6,8 +6,8 @@
 
 ### Readings - Required
 
-- Jurafsky, D., & Martin, J. H. (2024). Speech and language processing (3rd Edition). Pearson.
-  - Read: [Chapter 6: Vector Semantics and Embeddings](https://web.stanford.edu/~jurafsky/slp3/6.pdf) - Don't worry about the math, focus on the concepts.
+- Jurafsky, D., & Martin, J. H. (2026). Speech and language processing (3rd Edition). Pearson.
+  - Read: [Chapter 5: on Lexical Semantics and Embeddings](https://web.stanford.edu/~jurafsky/slp3/5.pdf) - Don't worry about the math, focus on the concepts.
 - Arseniev-Koehler, A. (2024). Theoretical foundations and limits of word embeddings: what types of meaning can they capture?. *Sociological Methods & Research, 53*(4), 1753-1793.
 - Valtonen, L., Mäkinen, S. J., & Kirjavainen, J. (2024). Advancing reproducibility and accountability of unsupervised machine learning in text mining: Importance of transparency in reporting preprocessing and algorithm selection. *Organizational Research Methods, 27*(1), 88-113.
 - Hannigan, T. R., Haans, R. F., Vakili, K., Tchalian, H., Glaser, V. L., Wang, M. S., ... & Jennings, P. D. (2019). Topic modeling in management research: Rendering new theory from textual data. *Academy of Management Annals, 13*(2), 586-632.

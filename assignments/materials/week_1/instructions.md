@@ -48,11 +48,6 @@
    3. Search for "Visual Studio Code" and install it
    4. Search for "Git (x64)" and install it
 
-## OPTIONAL - Upgrade your Python installation to include CUDA support for GPU acceleration
-1. If you have a NVIDIA GPU, you can install the CUDA version of Python packages to enable GPU acceleration for certain libraries (e.g., PyTorch, SpaCy)
-   1. Follow the instructions [here](https://pytorch.org/get-started/locally/) to install PyTorch with CUDA support
-   2. Follow the instructions [here](https://www.spacy.io/usage) to install spaCy with CUDA support
-
 ## Part 4 - Clone your the MAN7916 GitHub repository to your local machine and create the Python Environment
 
 1. Clone your new MAN7916 repository to your local machine using Visual Studio Code
@@ -75,7 +70,7 @@
     3. Type "Python: Select Interpreter" into the search bar
     4. Click on the "+ Create Virtual Environment..." option that appears
     5. Click on the "Venv" option that appears
-    6. Click on the Python 3.13 interpreter that you installed in Part 3
+    6. Click on the Python 3.12/3.13 interpreter that you installed in Part 3
     7. For the name of the virtual environment, ".venv" is fine
     8. When it asks you to install project dependencies, click on "Install project dependencies"
     9. Check the "requirements.txt" box that appears and press OK
@@ -83,6 +78,11 @@
 4. Create a new folder in the `assignments/submissions/` folder called ***assignment_1***
 5. Place a new (empty, at the moment) Word Document in the newly created folder called ***assignment_1.docx***
 <br><br>
+
+## OPTIONAL - Upgrade your Python installation to include CUDA support for GPU acceleration
+1. If you have a NVIDIA GPU, you can install the CUDA version of Python packages to enable GPU acceleration for certain libraries (e.g., PyTorch, SpaCy)
+   1. Follow the instructions [here](https://pytorch.org/get-started/locally/) to install PyTorch with CUDA support
+   2. Follow the instructions [here](https://www.spacy.io/usage) to install spaCy with CUDA support
 
 ## Part 5 - Run a Python Script and Jupyter Notebook
 
@@ -110,7 +110,7 @@
     * Paste the output from the Python script you ran in Step 5 into this section
     * Paste the output from the Jupyter Notebook you ran in Step 5 into this section as well
 4. Add a section header entitled "Disease Stigma"
-    * Visit: [This paper's github repository](https://github.com/arsena-k/disease_stigma)
+    * Visit: [This paper's GitHub repository](https://github.com/arsena-k/disease_stigma)
     * include in this section the following information:
         * On what date did the authors create the repository? [Hint](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/about-commits#using-the-file-tree)
         * On what date was the last commit entitled 'v1' made? [Hint](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/about-commits#using-the-file-tree)
@@ -124,18 +124,21 @@
 6. Save the file
 <BR><BR>
 
-## Part 7 - Upload the assignment to the github server
+## Part 7 - Upload the assignment to the GitHub server
 
 1. Commit the new folder and file to your local repository
     * If using GitHub Desktop, you can do this by:
+        * Making sure the new folder and file are checked in the "Changes" tab in the left sidebar of the application,
         * Typing `Added assignment_1.docx` in the "Summary" box in the bottom left corner of the application, then
         * clicking the "Commit to main" button in the bottom left corner of the application
-    * If using git SCM, you can do this by typing `git commit -m "Added assignment_1.docx"` in the terminal/command line interface.
+    * If using git SCM, you can do this by:
+        * Typing `git add .` in the terminal/command line interface and submitting that line (enter), then
+        * Typing `git commit -m "Added assignment_1.docx"` in the terminal/command line interface and submitting that line (enter).
     * *Note: you can replace the message with whatever you want, but it's good practice to make it descriptive of what you did.*
-2. Push the new folder and file to the github server
+2. Push the new folder and file to the GitHub server
     * If using GitHub Desktop, you can do this by clicking the "Push origin" button in the top right corner of the application
     * If using git SCM, you can do this by typing `git push` in the terminal/command line interface.
-3. Check that the file is now on the github server by visiting your repository on the github website
+3. Check that the file is now on the GitHub server by visiting your repository on the GitHub website
 
 ## Part 8 - Create an 'Issue' with a 'submitted' label
 

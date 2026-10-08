@@ -56,15 +56,22 @@ class TextDataset(Dataset):
     def __init__(self, directory):
         self.data = []
         self.labels = []
-        self.class_names = sorted(os.listdir(directory))
 
-        for label, class_name in enumerate(self.class_names):
+        label_map = {"neg": 0, "pos": 1}
+        self.class_names = list(label_map)
+
+        for class_name, label in label_map.items():
             class_dir = Path(directory) / class_name
-            if class_dir.is_dir():
-                for file_path in class_dir.glob("*.txt"):
-                    with open(file_path, "r", encoding="utf-8") as f:
-                        self.data.append(f.read().strip())
-                        self.labels.append(label)
+
+            if not class_dir.is_dir():
+                raise FileNotFoundError(
+                    f"Required sentiment folder not found: {class_dir}"
+                )
+
+            for file_path in sorted(class_dir.glob("*.txt")):
+                with open(file_path, "r", encoding="utf-8") as f:
+                    self.data.append(f.read().strip())
+                    self.labels.append(label)
 
     def __len__(self):
         return len(self.data)
@@ -79,20 +86,67 @@ def dataset_to_dataframe(dataset):
 
 
 def coeff_of_imbalance(pos, neg, tot_words):
-    if pos == neg:
-        return 0
-    elif pos > neg:
-        return ((pos**2 - pos * neg)) / ((pos + neg) * tot_words)
-    elif pos < neg:
-        return ((neg**2 - pos * neg)) / ((pos + neg) * tot_words)
+    if pos == neg or tot_words == 0:
+        return 0.0
+
+    denominator = (pos + neg) * tot_words
+
+    if pos > neg:
+        return (pos**2 - pos * neg) / denominator
+
+    return (pos * neg - neg**2) / denominator
+
+
+def parse_hyperparameter(name, text):
+    text = text.strip()
+
+    if name == "fit_prior":
+        boolean_values = {
+            "true": True,
+            "yes": True,
+            "1": True,
+            "false": False,
+            "no": False,
+            "0": False,
+        }
+        if text.lower() not in boolean_values:
+            raise ValueError("Enter true/false, yes/no, or 1/0.")
+        return boolean_values[text.lower()]
+
+    if name == "gamma" and text.lower() in {"auto", "scale"}:
+        return text.lower()
+
+    if name in {"C", "alpha", "gamma"}:
+        value = float(text)
+        if not np.isfinite(value) or value < 0 or (name == "C" and value == 0):
+            requirement = "positive" if name == "C" else "non-negative"
+            raise ValueError(f"{name} must be a finite {requirement} number.")
+        return value
+
+    if name in {"max_iter", "degree"}:
+        value = int(text)
+        minimum = 1 if name == "max_iter" else 0
+        if value < minimum:
+            raise ValueError(f"{name} must be an integer >= {minimum}.")
+        return value
+
+    choices = {
+        "solver": {"lbfgs", "newton-cg", "liblinear", "sag", "saga"},
+        "kernel": {"linear", "poly", "rbf", "sigmoid"},
+    }
+    if name in choices:
+        value = text.lower()
+        if value not in choices[name]:
+            raise ValueError(f"Choose one of: {', '.join(sorted(choices[name]))}.")
+        return value
+
+    raise ValueError(f"Unsupported hyperparameter: {name}.")
 
 
 print(f"\n====Loading Dataset==== - {datetime.now()}", flush=True)
-print(
-    """Loading the IMDB dataset: For simplicity, we're going to use a large
+print("""Loading the IMDB dataset: For simplicity, we're going to use a large
       publicly available dataset to demonstrate machine learning using multiple
-      techniques. This dataset has already been loaded for you in the setup process."""
-)
+      techniques. This dataset has already been loaded for you in the setup process.""")
 full_train_dataset = TextDataset(train_dir)
 test_dataset = TextDataset(test_dir)
 class_names = full_train_dataset.class_names
@@ -109,13 +163,19 @@ full_train_data = dataset_to_dataframe(train_dataset)
 full_validation_data = dataset_to_dataframe(val_dataset)
 full_test_data = dataset_to_dataframe(test_dataset)
 
-# Generating 3000 Row Test Dataset Subsample (for demonstration time-saving purposes)
-np.random.seed(seed)
-test_data = full_test_data.sample(n=3000)
-test_data["txt_sent"] = test_data.apply(
+# Sample validation reviews for dictionary development and demonstrations.
+development_data = full_validation_data.sample(
+    n=3000,
+    random_state=seed,
+)
+print(
+    "Dictionary refinement uses development reviews. "
+    "Scores on these reviews describe development performance."
+)
+development_data["txt_sent"] = development_data.apply(
     lambda x: "Positive" if x["sentiment"] == 1 else "Negative", axis=1
 )
-test_data["review"] = test_data["review"].apply(
+development_data["review"] = development_data["review"].apply(
     lambda x: x.replace("\\", "").replace("<br />", " ")
 )
 
@@ -131,7 +191,7 @@ print(
     flush=True,
 )
 nlp = spacy.load("en_core_web_sm")
-docs = nlp.pipe(test_data["review"].tolist())
+docs = nlp.pipe(development_data["review"].tolist())
 preprocessed = []
 for doc in docs:
     preprocessed.append(
@@ -142,7 +202,7 @@ for doc in docs:
             and token.text.lower() not in stops
         ]
     )
-test_data["review_tokens"] = preprocessed
+development_data["review_tokens"] = preprocessed
 _ = input("Preprocessing complete. Press Enter to continue...")
 print("\n\n")
 print("=" * 50)
@@ -153,7 +213,7 @@ print(
     " (whether it's a positive review or negative review) of the movie.\n\n"
     "Let's take a look at a few of the reviews.\n"
 )
-for _, row in test_data.head().iterrows():
+for _, row in development_data.head().iterrows():
     print(f"Review: {row['review'][:130]}...")
     print(f"Sentiment: {row['txt_sent']}\n")
 print(
@@ -192,7 +252,11 @@ while True:
     print(f"Concordance for '{look_for}':\n")
     print(
         nltk.Text(
-            [word for id, row in test_data.iterrows() for word in row["review_tokens"]]
+            [
+                word
+                for id, row in development_data.iterrows()
+                for word in row["review_tokens"]
+            ]
         ).concordance(look_for.lower())
     )
     if look_for == "beat":
@@ -219,13 +283,13 @@ print(
     f"\n====Dictionary-based CATA for Henry (2008) positivity and negativity dictionaries==== - {datetime.now()}",
     flush=True,
 )
-test_data["positivity_henry_08"] = test_data["review_tokens"].apply(
+development_data["positivity_henry_08"] = development_data["review_tokens"].apply(
     lambda x: get_count(x, dictionaries["Tone_Positivity_Henry08"]["words"])
 )
-test_data["negativity_henry_08"] = test_data["review_tokens"].apply(
+development_data["negativity_henry_08"] = development_data["review_tokens"].apply(
     lambda x: get_count(x, dictionaries["Tone_Negativity_Henry08"]["words"])
 )
-print(test_data.head())
+print(development_data.head())
 print(
     "\nNow that we have positivity and negativity scores, we can calculate a "
     "point-biserial correlation with the actual sentiment to see how accurate we are..."
@@ -234,8 +298,12 @@ print(
     f"\n====Calculating point-biserial correlations for positive and negative CATA with ground-truth sentiment==== - {datetime.now()}",
     flush=True,
 )
-pos_pbsr = pointbiserialr(x=test_data["sentiment"], y=test_data["positivity_henry_08"])
-neg_pbsr = pointbiserialr(x=test_data["sentiment"], y=test_data["negativity_henry_08"])
+pos_pbsr = pointbiserialr(
+    x=development_data["sentiment"], y=development_data["positivity_henry_08"]
+)
+neg_pbsr = pointbiserialr(
+    x=development_data["sentiment"], y=development_data["negativity_henry_08"]
+)
 print(
     f"The correlation between sentiment and the positivity dictionary is {pos_pbsr[0]:.02}; p = {pos_pbsr[1]:.03}"
 )
@@ -250,17 +318,21 @@ print(
     "\n* Janis-Fadner coefficient of imbalance\n\n"
     "Let's look at how these overall sentiment scores correlate:\n"
 )
-test_data["sentiment_henry_08"] = (
-    test_data["positivity_henry_08"] - test_data["negativity_henry_08"]
+development_data["sentiment_henry_08"] = (
+    development_data["positivity_henry_08"] - development_data["negativity_henry_08"]
 )
-test_data["coeff_imb_henry_08"] = test_data.apply(
+development_data["coeff_imb_henry_08"] = development_data.apply(
     lambda row: coeff_of_imbalance(
         row.positivity_henry_08, row.negativity_henry_08, len(row.review_tokens)
     ),
     axis=1,
 )
-sent_pbsr = pointbiserialr(x=test_data["sentiment"], y=test_data["sentiment_henry_08"])
-coi_pbsr = pointbiserialr(x=test_data["sentiment"], y=test_data["coeff_imb_henry_08"])
+sent_pbsr = pointbiserialr(
+    x=development_data["sentiment"], y=development_data["sentiment_henry_08"]
+)
+coi_pbsr = pointbiserialr(
+    x=development_data["sentiment"], y=development_data["coeff_imb_henry_08"]
+)
 print(
     f"The correlation between sentiment and the difference score is          {sent_pbsr[0]:.02}; p = {sent_pbsr[1]:.03}"
 )
@@ -276,7 +348,7 @@ print(
 )
 print(f"\n====Creating a scattertext explorer plot==== - {datetime.now()}", flush=True)
 st_corpus = (
-    st.CorpusFromPandas(test_data, category_col="txt_sent", text_col="review")
+    st.CorpusFromPandas(development_data, category_col="txt_sent", text_col="review")
     .build()
     .compact(st.AssociationCompactor(2000))
 )
@@ -371,31 +443,33 @@ custom_neg = list(
     set(dictionaries["Tone_Negativity_Henry08"]["words"] + add_to_negative)
     - set(remove_from_negative)
 )
-test_data["positivity_custom"] = test_data["review_tokens"].apply(
+development_data["positivity_custom"] = development_data["review_tokens"].apply(
     lambda x: get_count(x, custom_pos)
 )
-test_data["negativity_custom"] = test_data["review_tokens"].apply(
+development_data["negativity_custom"] = development_data["review_tokens"].apply(
     lambda x: get_count(x, custom_neg)
 )
-test_data["sentiment_custom"] = (
-    test_data["positivity_custom"] - test_data["negativity_custom"]
+development_data["sentiment_custom"] = (
+    development_data["positivity_custom"] - development_data["negativity_custom"]
 )
-test_data["coeff_imb_custom"] = test_data.apply(
+development_data["coeff_imb_custom"] = development_data.apply(
     lambda row: coeff_of_imbalance(
         row.positivity_custom, row.negativity_custom, len(row.review_tokens)
     ),
     axis=1,
 )
 cus_pos_pbsr = pointbiserialr(
-    x=test_data["sentiment"], y=test_data["positivity_custom"]
+    x=development_data["sentiment"], y=development_data["positivity_custom"]
 )
 cus_neg_pbsr = pointbiserialr(
-    x=test_data["sentiment"], y=test_data["negativity_custom"]
+    x=development_data["sentiment"], y=development_data["negativity_custom"]
 )
 cus_sent_pbsr = pointbiserialr(
-    x=test_data["sentiment"], y=test_data["sentiment_custom"]
+    x=development_data["sentiment"], y=development_data["sentiment_custom"]
 )
-cus_coi_pbsr = pointbiserialr(x=test_data["sentiment"], y=test_data["coeff_imb_custom"])
+cus_coi_pbsr = pointbiserialr(
+    x=development_data["sentiment"], y=development_data["coeff_imb_custom"]
+)
 
 print(
     f"The correlation between sentiment and the positivity dictionary is......... ORIGINAL: {pos_pbsr[0]:.02}; p = {pos_pbsr[1]:.02} --- CUSTOM: {cus_pos_pbsr[0]:.02}; p = {cus_pos_pbsr[1]:.02}"
@@ -439,10 +513,12 @@ print(
     " with a generic dictionary-based computer-aided text analysis.\nLet's see "
     "how well it compares quantitatively on our corpus of IMDB movie reviews:\n"
 )
-test_data["vader_comp"] = test_data["review"].apply(
+development_data["vader_comp"] = development_data["review"].apply(
     lambda x: vader_coder.polarity_scores(x)["compound"]
 )
-vader_pbsr = pointbiserialr(x=test_data["sentiment"], y=test_data["vader_comp"])
+vader_pbsr = pointbiserialr(
+    x=development_data["sentiment"], y=development_data["vader_comp"]
+)
 print(
     f"The correlation between sentiment and the VADER score is................... ORIGINAL: {vader_pbsr[0]:.02}; p = {vader_pbsr[1]:.02}"
 )
@@ -483,7 +559,6 @@ print(
 vectorizer = TfidfVectorizer(max_features=10000)
 x_train_tfidf = vectorizer.fit_transform(full_train_data["review"])
 x_validation_tfidf = vectorizer.transform(full_validation_data["review"])
-x_test_tfidf = vectorizer.transform(full_test_data["review"])
 
 print(
     "\n\nLogistic Regression: This technique should sound familiar. This "
@@ -493,7 +568,7 @@ print(
     "a tf-idf vector)."
 )
 hyperparameters = {
-    "C": 1,
+    "C": 1.0,
     "solver": "lbfgs",
     "max_iter": 100,
 }
@@ -506,21 +581,19 @@ while True:
         flush=True,
     )
     lr_classifier = linear_model.LogisticRegression(
-        penalty=hyperparameters["penalty"],
         C=hyperparameters["C"],
         solver=hyperparameters["solver"],
         max_iter=hyperparameters["max_iter"],
-        n_jobs=-1,
     )
     lr_classifier.fit(x_train_tfidf, full_train_data["sentiment"])
-    lr_predictions = lr_classifier.predict(x_test_tfidf)
+    lr_predictions = lr_classifier.predict(x_validation_tfidf)
 
     print(
         f"\n====Estimate and print the accuracy and phi coefficient for the logistic regression classifier==== - {datetime.now()}",
         flush=True,
     )
-    lr_accuracy = accuracy_score(lr_predictions, full_test_data["sentiment"])
-    lr_phi = matthews_corrcoef(lr_predictions, full_test_data["sentiment"])
+    lr_accuracy = accuracy_score(lr_predictions, full_validation_data["sentiment"])
+    lr_phi = matthews_corrcoef(lr_predictions, full_validation_data["sentiment"])
 
     print(f"Logistic Regression accuracy: {lr_accuracy:.2%}")
     print(f"Logistic Regression phi coefficient (correlation): {lr_phi:.02}")
@@ -537,32 +610,11 @@ while True:
             continue
         new_value = input(f"Enter the new value for {hyperparameter}: ")
         try:
-            if hyperparameter == "penalty" and new_value not in [
-                "l2",
-                "l1",
-                "elasticnet",
-            ]:
-                print("Invalid value. Please try again.")
-                continue
-            if hyperparameter == "solver" and new_value not in [
-                "lbfgs",
-                "newton-cg",
-                "liblinear",
-                "sag",
-                "saga",
-            ]:
-                print("Invalid value. Please try again.")
-                continue
-            if (hyperparameter == "max_iter" or hyperparameter == "C") and (
-                not new_value.isdigit() or int(new_value) < 1
-            ):
-                print("Invalid value. Please try again.")
-                continue
-            hyperparameters[hyperparameter] = type(hyperparameters[hyperparameter])(
-                new_value
+            hyperparameters[hyperparameter] = parse_hyperparameter(
+                hyperparameter, new_value
             )
-        except ValueError:
-            print("Invalid value. Please try again.")
+        except ValueError as error:
+            print(f"Invalid value: {error} Please try again.")
             continue
         print("Change another hyperparameter?")
         if input("Enter 'y' to change another hyperparameter: ").lower() != "y":
@@ -587,14 +639,14 @@ while True:
         alpha=hyperparameters["alpha"], fit_prior=hyperparameters["fit_prior"]
     )
     nb_classifier.fit(x_train_tfidf, full_train_data["sentiment"])
-    nb_predictions = nb_classifier.predict(x_test_tfidf)
+    nb_predictions = nb_classifier.predict(x_validation_tfidf)
 
     print(
         f"\n====Estimate and print the accuracy and phi coefficient for the naive bayes classifier==== - {datetime.now()}",
         flush=True,
     )
-    nb_accuracy = accuracy_score(nb_predictions, full_test_data["sentiment"])
-    nb_phi = matthews_corrcoef(nb_predictions, full_test_data["sentiment"])
+    nb_accuracy = accuracy_score(nb_predictions, full_validation_data["sentiment"])
+    nb_phi = matthews_corrcoef(nb_predictions, full_validation_data["sentiment"])
 
     print(f"Naive Bayes' accuracy: {nb_accuracy:.2%}")
     print(f"Naive Bayes' phi coefficient (correlation): {nb_phi:.02}")
@@ -611,11 +663,11 @@ while True:
             continue
         new_value = input(f"Enter the new value for {hyperparameter}: ")
         try:
-            hyperparameters[hyperparameter] = type(hyperparameters[hyperparameter])(
-                new_value
+            hyperparameters[hyperparameter] = parse_hyperparameter(
+                hyperparameter, new_value
             )
-        except ValueError:
-            print("Invalid value. Please try again.")
+        except ValueError as error:
+            print(f"Invalid value: {error} Please try again.")
             continue
         print("Change another hyperparameter?")
         if input("Enter 'y' to change another hyperparameter: ").lower() != "y":
@@ -653,14 +705,14 @@ while True:
         n_jobs=-1,
     )
     rf_classifier.fit(x_train_tfidf, full_train_data["sentiment"])
-    rf_predictions = rf_classifier.predict(x_test_tfidf)
+    rf_predictions = rf_classifier.predict(x_validation_tfidf)
 
     print(
         f"\n====Estimate and print the accuracy and phi coefficient for the random forest classifier==== - {datetime.now()}",
         flush=True,
     )
-    rf_accuracy = accuracy_score(rf_predictions, full_test_data["sentiment"])
-    rf_phi = matthews_corrcoef(rf_predictions, full_test_data["sentiment"])
+    rf_accuracy = accuracy_score(rf_predictions, full_validation_data["sentiment"])
+    rf_phi = matthews_corrcoef(rf_predictions, full_validation_data["sentiment"])
 
     print(f"Random Forest accuracy: {rf_accuracy:.2%}")
     print(f"Random Forest phi coefficient (correlation): {rf_phi:.02}")
@@ -728,14 +780,14 @@ while True:
         gamma=hyperparameters["gamma"],
     )
     svm_classifier.fit(x_train_tfidf, full_train_data["sentiment"])
-    svm_predictions = svm_classifier.predict(x_test_tfidf)
+    svm_predictions = svm_classifier.predict(x_validation_tfidf)
 
     print(
         f"\n====Estimate and print the accuracy and phi coefficient for the random forest classifier==== - {datetime.now()}",
         flush=True,
     )
-    svm_accuracy = accuracy_score(svm_predictions, full_test_data["sentiment"])
-    svm_phi = matthews_corrcoef(svm_predictions, full_test_data["sentiment"])
+    svm_accuracy = accuracy_score(svm_predictions, full_validation_data["sentiment"])
+    svm_phi = matthews_corrcoef(svm_predictions, full_validation_data["sentiment"])
 
     print(f"Support Vector Machine accuracy: {svm_accuracy:.2%}")
     print(f"Support Vector Machine phi coefficient (correlation): {svm_phi:.02}")
@@ -752,86 +804,43 @@ while True:
             continue
         new_value = input(f"Enter the new value for {hyperparameter}: ")
         try:
-            if hyperparameter == "kernel" and new_value not in [
-                "linear",
-                "poly",
-                "rbf",
-                "sigmoid",
-            ]:
-                print("Invalid value. Please try again.")
-                continue
-            if (hyperparameter == "C" or hyperparameter == "degree") and (
-                not new_value.isdigit() or int(new_value) < 1
-            ):
-                print("Invalid value. Please try again.")
-                continue
-            if (
-                hyperparameter == "gamma"
-                and new_value not in ["auto", "scale"]
-                and not isinstance(new_value, float)
-            ):
-                print("Invalid value. Please try again.")
-                continue
-            if hyperparameter != "gamma":
-                hyperparameters[hyperparameter] = type(hyperparameters[hyperparameter])(
-                    new_value
-                )
-            else:
-                if new_value == "auto" or new_value == "scale":
-                    hyperparameters[hyperparameter] = new_value
-                else:
-                    hyperparameters[hyperparameter] = float(new_value)
-        except ValueError:
-            print("Invalid value. Please try again.")
+            hyperparameters[hyperparameter] = parse_hyperparameter(
+                hyperparameter, new_value
+            )
+        except ValueError as error:
+            print(f"Invalid value: {error} Please try again.")
             continue
         print("Change another hyperparameter?")
         if input("Enter 'y' to change another hyperparameter: ").lower() != "y":
             break
 
-print(
-    "\n\nA Final Comparison: This wraps up the comparison of the sentiment analysis "
-    "machine learning classification algorithms. As I hope you've seen, this "
-    "is not a one-size-fits-all decision, there are a number of factors that "
-    "should enter into your calculus for not only deciding what tool to use, "
-    "but how to tune and use it. That being said, the below code will "
-    "consolidate all of the statistics for the models we ran (net of any "
-    "tinkering you may have done as part of the activities, of course)."
-)
-print(
-    f"\n\n====Comparison of each sentiment approach==== - {datetime.now()}", flush=True
-)
-print("CORRELATIONS:")
-print(
-    f"The correlation between sentiment and the positivity dictionary is......... ORIGINAL: {pos_pbsr[0]:.02}; p = {pos_pbsr[1]:.02e} --- CUSTOM: {cus_pos_pbsr[0]:.02}; p = {cus_pos_pbsr[1]:.02e}"
-)
-print(
-    f"The correlation between sentiment and the negativity dictionary is......... ORIGINAL: {neg_pbsr[0]:.02}; p = {neg_pbsr[1]:.02e} --- CUSTOM:{cus_neg_pbsr[0]:.02}; p = {cus_neg_pbsr[1]:.02e}"
-)
-print(
-    f"The correlation between sentiment and the difference score is.............. ORIGINAL: {sent_pbsr[0]:.02}; p = {sent_pbsr[1]:.02e} --- CUSTOM: {cus_sent_pbsr[0]:.02}; p = {cus_sent_pbsr[1]:.02e}"
-)
-print(
-    f"The correlation between sentiment and the coefficient of imbalance is...... ORIGINAL: {coi_pbsr[0]:.02}; p = {coi_pbsr[1]:.02e} --- CUSTOM: {cus_coi_pbsr[0]:.02}; p = {cus_coi_pbsr[1]:.02e}"
-)
-print(
-    f"The Logistic Regression phi coefficient (correlation) with sentiment is.............. {lr_phi:.02}"
-)
-print(
-    f"The Naive Bayes' phi coefficient (correlation) with sentiment is..................... {nb_phi:.02}"
-)
-print(
-    f"The Random Forest phi coefficient (correlation) with sentiment is.................... {rf_phi:.02}"
-)
-print(
-    f"The Support Vector Machine phi coefficient (correlation) with sentiment is........... {svm_phi:.02}"
-)
+print("\nDICTIONARY DEVELOPMENT PERFORMANCE")
+print("These correlations use reviews inspected during dictionary refinement.")
 
-print(f"{'-'*120}")
-print("ACCURACIES:")
-print(f"Logistic Regression accuracy................... {lr_accuracy:.2%}")
-print(f"Naive Bayes' accuracy.......................... {nb_accuracy:.2%}")
-print(f"Random Forest accuracy......................... {rf_accuracy:.2%}")
-print(f"Support Vector Machine accuracy................ {svm_accuracy:.2%}")
+for name, original, refined in [
+    ("Positivity", pos_pbsr, cus_pos_pbsr),
+    ("Negativity", neg_pbsr, cus_neg_pbsr),
+    ("Difference score", sent_pbsr, cus_sent_pbsr),
+    ("Imbalance coefficient", coi_pbsr, cus_coi_pbsr),
+]:
+    print(f"{name}: original r={original[0]:.3f}; " f"refined r={refined[0]:.3f}")
+
+print(f"VADER development correlation: {vader_pbsr[0]:.3f}")
+
+print("\nFINAL HELD-OUT TEST PERFORMANCE")
+x_test_tfidf = vectorizer.transform(full_test_data["review"])
+test_labels = full_test_data["sentiment"]
+
+for name, classifier in [
+    ("Logistic Regression", lr_classifier),
+    ("Naive Bayes", nb_classifier),
+    ("Random Forest", rf_classifier),
+    ("Support Vector Machine", svm_classifier),
+]:
+    test_predictions = classifier.predict(x_test_tfidf)
+    test_accuracy = accuracy_score(test_labels, test_predictions)
+    test_mcc = matthews_corrcoef(test_labels, test_predictions)
+    print(f"{name}: accuracy={test_accuracy:.2%}; " f"MCC={test_mcc:.3f}")
 _ = input("Press Enter to continue...")
 print("\n\n")
 print("=" * 50)
@@ -898,7 +907,7 @@ while True:
         eta=hyperparameters["eta"],
         k=hyperparameters["k"],
     )
-    for review_text in test_data["review_tokens"]:
+    for review_text in development_data["review_tokens"]:
         model.add_doc(review_text)
     model.burn_in = 100
     model.train(0)
@@ -936,46 +945,42 @@ while True:
         if hyperparameter not in hyperparameters:
             print("Invalid hyperparameter. Please try again.")
             continue
-        new_value = input(f"Enter the new value for {hyperparameter}: ")
+        new_value = input(f"Enter the new value for {hyperparameter}: ").strip()
+
         try:
-            if hyperparameter == "kernel" and new_value not in [
-                "linear",
-                "poly",
-                "rbf",
-                "sigmoid",
-            ]:
-                print("Invalid value. Please try again.")
-                continue
-            if (
-                hyperparameter == "k"
-                or hyperparameter == "min_cf"
-                or hyperparameter == "min_df"
-                or hyperparameter == "rm_top"
-            ) and (not new_value.isdigit() or int(new_value) < 1):
-                print("Invalid value. Please try again.")
-                continue
-            if hyperparameter == "term_weight" and new_value.lower() not in [
-                "one",
-                "pmi",
-                "idf",
-            ]:
-                print("Invalid value. Please try again.")
-                continue
-            if hyperparameter != "gamma":
-                hyperparameters[hyperparameter] = type(hyperparameters[hyperparameter])(
-                    new_value
-                )
+            if hyperparameter == "term_weight":
+                term_weights = {
+                    "one": tp.TermWeight.ONE,
+                    "pmi": tp.TermWeight.PMI,
+                    "idf": tp.TermWeight.IDF,
+                }
+                weight_name = new_value.lower()
+                if weight_name not in term_weights:
+                    raise ValueError("Choose one, pmi, or idf.")
+                parsed_value = term_weights[weight_name]
+
+            elif hyperparameter in {"k", "min_cf", "min_df", "rm_top"}:
+                parsed_value = int(new_value)
+                minimum = 1 if hyperparameter == "k" else 0
+                if parsed_value < minimum:
+                    raise ValueError(
+                        f"{hyperparameter} must be an integer >= {minimum}."
+                    )
+
+            elif hyperparameter in {"alpha", "eta"}:
+                parsed_value = float(new_value)
+                if not np.isfinite(parsed_value) or parsed_value <= 0:
+                    raise ValueError(
+                        f"{hyperparameter} must be a finite positive number."
+                    )
+
             else:
-                if new_value == "one":
-                    hyperparameters[hyperparameter] = tp.TermWeight.ONE
-                elif new_value == "pmi":
-                    hyperparameters[hyperparameter] = tp.TermWeight.PMI
-                elif new_value == "idf":
-                    hyperparameters[hyperparameter] = tp.TermWeight.IDF
-                else:
-                    raise ValueError("Invalid value. Please try again.")
-        except ValueError:
-            print("Invalid value. Please try again.")
+                raise ValueError("Unsupported hyperparameter.")
+
+            hyperparameters[hyperparameter] = parsed_value
+
+        except ValueError as error:
+            print(f"Invalid value: {error} Please try again.")
             continue
         print("Change another hyperparameter?")
         if input("Enter 'y' to change another hyperparameter: ").lower() != "y":

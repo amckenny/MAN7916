@@ -1,7 +1,7 @@
 import evaluate
 import numpy as np
 from pprint import pprint
-from datasets import load_dataset
+from datasets import DatasetDict, load_dataset
 from transformers import (
     AutoTokenizer,
     DataCollatorWithPadding,
@@ -38,6 +38,18 @@ def main():
     )
     print("Loading IMDB dataset... This may take a minute.")
     imdb = load_dataset("imdb")
+
+    training_split = imdb["train"].train_test_split(
+        test_size=0.2,
+        seed=24601,
+        stratify_by_column="label",
+    )
+
+    imdb = DatasetDict({
+        "train": training_split["train"],
+        "validation": training_split["test"],
+        "test": imdb["test"],
+    })
     print("-" * 25, "Raw Sample Data", "-" * 25)
     pprint(imdb["test"][0], width=100, indent=5, compact=True)
     prompt_user_to_continue()
@@ -65,7 +77,12 @@ def main():
 
     print("Step 4: Initializing the DistilBERT model for sequence classification.")
     print(
-        "This model is a smaller, faster version of BERT that has been fine-tuned for sentiment analysis."
+        "DistilBERT is a smaller, faster version of BERT. "
+        "We start with the pretrained distilbert-base-uncased checkpoint "
+        "and add a newly initialized classification head for positive "
+        "and negative sentiment. This exercise fine-tunes both the "
+        "pretrained model and the classification head on labeled "
+        "IMDB reviews."
     )
     id2label = {0: "NEGATIVE", 1: "POSITIVE"}
     label2id = {"NEGATIVE": 0, "POSITIVE": 1}
@@ -78,7 +95,12 @@ def main():
 
     print("Step 5: Preparing training arguments and Trainer.")
     print(
-        "For demo purposes, we can use a small subset of 50 samples for both training and evaluation."
+        "For a quick demonstration, enter 50 to use 50 training reviews "
+        "and 50 validation reviews. Validation runs after each epoch "
+        "and determines which checkpoint is selected. "
+        "After training, the selected checkpoint is evaluated once on "
+        "all 25,000 official test reviews. That final evaluation may "
+        "take substantial time even when the training sample is small."
     )
     training_args = TrainingArguments(
         output_dir="imdb_model",
@@ -90,13 +112,22 @@ def main():
         eval_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
+        metric_for_best_model="accuracy",
+        greater_is_better=True,
         push_to_hub=False,
     )
 
     while True:
-        print("\nHow many samples would you like to use for training and evaluation?")
-        print("Enter a number (-1 to use all).")
-        user_input = input("Number of samples: ")
+        print("\nHow many training reviews would you like to use?")
+        print(
+            "Validation will use the same number of reviews, "
+            "up to the available validation-set size."
+        )
+        print(
+            "Enter a positive whole number, "
+            "or -1 to use all training and validation reviews."
+        )
+        user_input = input("Training review count: ").strip()
         if user_input.strip() == "-1":
             train_subset = tokenized_imdb["train"].shuffle(seed=24601)
             break
@@ -112,7 +143,15 @@ def main():
         else:
             print("Invalid input. Please enter a valid number")
 
-    eval_subset = tokenized_imdb["test"].shuffle(seed=24601)
+    validation_pool = tokenized_imdb["validation"].shuffle(seed=24601)
+    eval_subset = validation_pool.select(
+        range(min(len(train_subset), len(validation_pool)))
+    )
+
+    print(
+        f"Using {len(train_subset)} training reviews and "
+        f"{len(eval_subset)} validation reviews."
+    )
 
     trainer = Trainer(
         model=model,
@@ -129,6 +168,15 @@ def main():
     print("Step 6: Training the model...")
     trainer.train()
     print("Model training complete.")
+    print("Evaluating the selected checkpoint on the official test split.")
+    test_metrics = trainer.evaluate(
+        eval_dataset=tokenized_imdb["test"],
+        metric_key_prefix="test",
+    )
+    print(
+        f"Final held-out test accuracy: "
+        f"{test_metrics['test_accuracy']:.2%}"
+    )
     prompt_user_to_continue()
 
     print("Step 7: Running inference on a sample text using the trained model.")

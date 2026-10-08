@@ -45,7 +45,7 @@ Open the .csv file in Excel and evaluate each word for inclusion in the dictiona
 
 ## Part 3 - (Topic Modeling)
 
-In the second part of the assignment, you will create a topic model of an area of research you are interested in. Collect a corpus of at least 10 articles on a phenomenon you are interested in. You may either use a PDF Python package to extract the text from the PDFs or copy and paste the text into .txt files, but do not upload the fulltexts to the github server (put them in the `local_data` folder).
+In the second part of the assignment, you will create a topic model of an area of research you are interested in. Collect a corpus of at least 10 articles on a phenomenon you are interested in. You may either use a PDF Python package to extract the text from the PDFs or copy and paste the text into .txt files, but do not upload the fulltexts to the GitHub server (put them in the `local_data` folder).
 
 1. Train LDA models with 2, 3, 4, 5, 6, 7, 8, 9, and 10 topics on the corpus (you may add more if you think there are more). Save the coherence score for each model in `topic_model_results.docx`.
 2. Plot the coherence scores for each model (similar to [this](https://www.researchgate.net/publication/366941274/figure/fig1/AS:11431281111664783@1673099185937/Plot-of-topics-versus-coherence-score.png))and save the plot as `coherence_scores.jpg` - you do not have to use Python to do this, you can use Excel or another program if you prefer.
@@ -59,12 +59,12 @@ In the second part of the assignment, you will create a topic model of an area o
 
 <br>
 
-## Step 4 - Upload the assignment materials to the github server
+## Step 4 - Upload the assignment materials to the GitHub server
 
 1. Verify that the assignment_5 folder has been created and contains the three python files, and several output files.
 2. Commit the new folder and files to your local repository
-3. Push the new folder and files to the github server
-4. Check that the file is now on the github server by visiting your repository on the github website
+3. Push the new folder and files to the GitHub server
+4. Check that the file is now on the GitHub server by visiting your repository on the GitHub website
 
 ## Step 5 - Create an 'Issue' with a 'submitted' label
 

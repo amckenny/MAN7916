@@ -91,12 +91,12 @@ In the second part of the assignment, you will use the preprocessing techniques 
 
 <br>
 
-## Step 4 - Upload the assignment materials to the github server
+## Step 4 - Upload the assignment materials to the GitHub server
 
 1. Verify that the assignment_4 folder has been created and contains the two python files, four jpg files, two csv files, and one txt file.
 2. Commit the new folder and files to your local repository
-3. Push the new folder and files to the github server
-4. Check that the file is now on the github server by visiting your repository on the github website
+3. Push the new folder and files to the GitHub server
+4. Check that the file is now on the GitHub server by visiting your repository on the GitHub website
 
 ## Step 5 - Create an 'Issue' with a 'submitted' label
 

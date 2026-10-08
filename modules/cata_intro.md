@@ -6,9 +6,9 @@
 
 ### Readings - Required
 
-- Jurafsky, D., & Martin, J. H. (2024). Speech and language processing (3rd Edition). Pearson.
-  - Read: [Chapter 2: Regular Expressions, Tokenization, Edit Distance](https://web.stanford.edu/~jurafsky/slp3/2.pdf)
-  - Read: [Chapter 3: N-gram Language Models](https://web.stanford.edu/~jurafsky/slp3/3.pdf)
+- Jurafsky, D., & Martin, J. H. (2026). Speech and language processing (3rd Edition). Pearson.
+  - Read: [Chapter 2: Sections 2.6-2.9 on Regular Expressions, Tokenization, and Edit Distance](https://web.stanford.edu/~jurafsky/slp3/2.pdf)
+  - Read: [Chapter 3: All sections on N-gram Language Models](https://web.stanford.edu/~jurafsky/slp3/3.pdf)
 - Hickman, L., Thapa, S., Tay, L., Cao, M., & Srinivasan, P. (2022). Text preprocessing for text mining in organizational research: Review and recommendations. *Organizational Research Methods, 25*(1), 114-146.
 - Reid, S. W., McKenny, A. F., & Short, J. C. (2023). Synthesizing best practices for conducting dictionary-based computerized text analysis research. In Methods to Improve Our Field (Vol. 14, pp. 43-78). Emerald Publishing Limited.
 

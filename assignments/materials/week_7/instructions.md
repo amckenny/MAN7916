@@ -40,12 +40,12 @@ In this assignment you are going to pull together a lot of what you have learned
 
 <br>
 
-## Part 3 - Upload the assignment materials to the github server
+## Part 3 - Upload the assignment materials to the GitHub server
 
 1. Verify that the assignment_7 folder has been created and contains at least the python and Word files.
 2. Commit the new folder and files to your local repository
-3. Push the new folder and files to the github server
-4. Check that the file is now on the github server by visiting your repository on the github website
+3. Push the new folder and files to the GitHub server
+4. Check that the file is now on the GitHub server by visiting your repository on the GitHub website
 
 ## Part 4 - Create an 'Issue' with a 'submitted' label
 
