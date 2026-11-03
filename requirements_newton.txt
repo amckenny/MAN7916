@@ -8,7 +8,7 @@ pyLDAvis
 scattertext
 scikit-learn
 seaborn
-spacy[cuda-autodetect]
+spacy[cuda12x]
 stanza
 tomotopy
 torch

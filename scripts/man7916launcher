@@ -53,29 +53,45 @@ prompt_user() {
       echo "=================================================="
 
       TAR_FILE="./corpora/aclImdb_v1.tar.gz"
-      EXTRACT_DIR="./corpora/aclImdb/"
-      if [ ! -f "$TAR_FILE" ]; then
-        echo "Downloading aclImdb_v1.tar.gz..."
-        wget -q https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz -O "$TAR_FILE"
-      else
-        echo "File already exists: $TAR_FILE"
+      EXTRACT_DIR="./corpora/aclImdb"
+      IMDB_URL="https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
+
+      # A valid archive is necessary even if a file was downloaded previously.
+      if [ ! -f "$TAR_FILE" ] || ! tar -tzf "$TAR_FILE" >/dev/null 2>&1; then
+        echo "Downloading (or replacing invalid) IMDB archive..."
+        rm -f "$TAR_FILE"
+        if ! wget --tries=5 --timeout=60 --continue "$IMDB_URL" -O "${TAR_FILE}.part"; then
+          echo "ERROR: IMDB download failed."
+          rm -f "${TAR_FILE}.part"
+          return 1
+        fi
+        if ! tar -tzf "${TAR_FILE}.part" >/dev/null 2>&1; then
+          echo "ERROR: Downloaded IMDB archive is invalid or incomplete."
+          rm -f "${TAR_FILE}.part"
+          return 1
+        fi
+        mv "${TAR_FILE}.part" "$TAR_FILE"
       fi
 
-      if [ ! -d "$EXTRACT_DIR" ]; then
-        echo "Extracting aclImdb_v1.tar.gz..."
+      # Check the extracted dataset itself; the directory may exist after a failed tar.
+      if [ ! -d "$EXTRACT_DIR/train/pos" ] || [ ! -d "$EXTRACT_DIR/train/neg" ] || \
+         [ ! -d "$EXTRACT_DIR/test/pos" ] || [ ! -d "$EXTRACT_DIR/test/neg" ]; then
+        echo "Extracting IMDB archive..."
+        rm -rf "$EXTRACT_DIR"
         mkdir -p "$EXTRACT_DIR"
-        tar -xzf "$TAR_FILE" -C "$EXTRACT_DIR" --strip-components=1
+        if ! tar -xzf "$TAR_FILE" -C "$EXTRACT_DIR" --strip-components=1; then
+          echo "ERROR: IMDB extraction failed."
+          rm -rf "$EXTRACT_DIR"
+          return 1
+        fi
       else
-        echo "Data already extracted in: $EXTRACT_DIR"
+        echo "IMDB dataset already extracted."
       fi
 
-      UNSUP_DIR="./corpora/aclImdb/train/unsup/"
-
-      if [ ! -d "$UNSUP_DIR" ]; then
-        echo "unsup directory already removed... skipping..."
-      else
+      UNSUP_DIR="$EXTRACT_DIR/train/unsup"
+      if [ -d "$UNSUP_DIR" ]; then
         echo "Removing unneeded unsup directory: $UNSUP_DIR"
-        rm -r "$UNSUP_DIR"
+        rm -rf "$UNSUP_DIR"
       fi
 
       if ! submission=$(sbatch --parsable ./venv_and_directory_setup.slurm); then
@@ -120,6 +136,7 @@ Inside the allocated compute session:
 After the demo returns to the command prompt:
   exit
 EOF
+      ;;
     [Nn]* )
       echo "You chose to exit. No changes will be made. Goodbye!"
       exit 0
