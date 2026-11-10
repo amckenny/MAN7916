@@ -17,8 +17,12 @@ dmypy.json
 
 # Sensitive folders
 assignments/solutions/
+corpora/*
+!corpora/README.md
 local_data/*
 !local_data/README.md
+output/*
+!output/README.md
 scratch/*
 !scratch/README.md
 

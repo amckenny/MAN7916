@@ -3,8 +3,10 @@ evaluate
 matplotlib
 nltk
 numpy
+openai
 pandas
 pyLDAvis
+python-dotenv
 scattertext
 scikit-learn
 seaborn
